@@ -9,6 +9,8 @@ import project.library.models.Book;
 import project.library.models.Person;
 import project.library.repositories.PeopleRepository;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -61,6 +63,16 @@ public class PeopleService {
 
         if (person.isPresent()){
             Hibernate.initialize(person.get().getBooks());
+
+            Long duration = (long) ((10 * 60 * 60 * 24) * 1000);
+            for (Book book: person.get().getBooks()){
+                if (book.getTime() != null){
+                    if ((book.getTime().getTime() + duration) <= (Timestamp.from(Instant.now()).getTime())) {
+                        book.setExpired(true);
+                    }
+                }
+            }
+
             return person.get().getBooks();
 
         } else {

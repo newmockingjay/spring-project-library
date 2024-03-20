@@ -18,13 +18,11 @@ import project.library.util.PersonValidator;
 public class PeopleController {
     //private final PersonDAO personDAO;
     private final PeopleService peopleService;
-    //private final BooksService booksService;
     private final PersonValidator personValidator;
 
     @Autowired
     public PeopleController(PeopleService peopleService, PersonValidator personValidator) {
         this.peopleService = peopleService;
-        //this.booksService = booksService;
         //this.personDAO = personDAO;
         this.personValidator = personValidator;
     }
@@ -37,8 +35,11 @@ public class PeopleController {
 
     @GetMapping("/{id}")
     public String showPerson(@PathVariable("id") int id, Model model){
+        //booksService.isExpired();
+
         model.addAttribute("person", peopleService.findOne(id));
         model.addAttribute("books", peopleService.findBooksById(id));
+
         return "people/show";
     }
 

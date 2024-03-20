@@ -1,12 +1,17 @@
 package project.library.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import project.library.models.Book;
 import project.library.models.Person;
 import project.library.repositories.BooksRepository;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,9 +26,24 @@ public class BooksService {
         this.booksRepository = booksRepository;
     }
 
-    public List<Book> findAll(){
-        return booksRepository.findAll();
+    public List<Book> findAll(boolean sort){
+        if (sort){
+            return booksRepository.findAll(Sort.by("year"));
+        } else {
+            return booksRepository.findAll();
+        }
     }
+
+    public List<Book> findAllWithPage(Integer page, Integer booksPerPage, boolean sort){
+        if (sort){
+            return booksRepository.findAll(PageRequest.of(page, booksPerPage,
+                    Sort.by("year"))).getContent();
+        } else {
+            return booksRepository.findAll(PageRequest.of(page, booksPerPage)).getContent();
+        }
+    }
+
+
 
     public Book findOne(int id){
         Optional<Book> book = booksRepository.findById(id);
@@ -38,6 +58,7 @@ public class BooksService {
     @Transactional
     public void update(int id, Book updatedBook){
         updatedBook.setBookId(id);
+        //updatedBook.setOwner(updatedBook.getOwner());
         booksRepository.save(updatedBook);
     }
 
@@ -56,6 +77,8 @@ public class BooksService {
         booksRepository.findById(id).ifPresent(
                 book -> {
                     book.setOwner(null);
+                    book.setTime(null);
+                    book.setExpired(false);
                 }
         );
     }
@@ -68,7 +91,14 @@ public class BooksService {
         booksRepository.findById(id).ifPresent(
                 book -> {
                     book.setOwner(selectedPerson);
+                    book.setTime(Timestamp.from(Instant.now()));
+                    book.setExpired(false);
                 }
         );
     }
+
+    public List<Book> findByName(String start){
+        return booksRepository.findByNameStartingWith(start);
+    }
+
 }
